@@ -15,7 +15,28 @@ router = APIRouter(
 
 # user signup
 # POST
+class userCreateRequest(BaseModel):
+    username: str
+    name: str
 
+@router.post("/user/signup")
+def create_user(user: userCreateRequest):
+
+    new_user = {
+                    "username": user.username,
+                    "name": user.name
+                }
+    
+    user_insert_sql = sqlalchemy.text("""
+                        INSERT INTO users (username, name)
+                        VALUES (:username, :name)
+                        RETURNING user_id
+                        """)
+    
+    with db.engine.begin() as connection:
+        newuser_id = connection.execute(user_insert_sql, new_user).scalar()
+    
+    return newuser_id
 
 # user login - ivana
 # POST

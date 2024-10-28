@@ -1,10 +1,12 @@
 from fastapi import FastAPI, exceptions
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+from src.api import user
 import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
+
 
 description = """
 Playlistify is everyone's newest, favorite way to show off your music taste.
@@ -30,6 +32,9 @@ app.add_middleware(
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+app.include_router(user.router)
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
