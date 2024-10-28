@@ -10,8 +10,7 @@ Yasemin navigates to the signup page to create her account. She provides her det
 ```json
 {
     "username": "YazOnPlaylistify",
-    "password": "SecurePassword123",
-    "email": "yasemin@example.com"
+    "name": "Yasemin Akkaya"
 }
 ```
 
@@ -29,16 +28,14 @@ After her account is created, Yasemin needs to log in to access the competition 
 **Yasemin calls POST /user/login with her credentials:**
 ```json
 {
-    "username": "YazOnPlaylistify",
-    "password": "SecurePassword123"
+    "username": "YazOnPlaylistify"
 }
 ```
 
 **Response:**
 ```json
 {
-    "message": "Login successful",
-    "token": "abc123456789"
+    "message": "Login successful"
 }
 ```
 
