@@ -63,8 +63,7 @@ Christian goes onto the site and enters his credentials to log onto his personal
 **Christian enters his credentials with POST /user/login:**
 ```json
 {
-	"username":	"physics_is_fun123",
-	"password":	"R34llyG00dP455word"
+	"username":	"physics_is_fun123"
 }
 ```
 **Response:**
@@ -76,15 +75,13 @@ Christian goes onto the site and enters his credentials to log onto his personal
 He realizes he used a login from a different site and re-enters his information correctly:
 ```json
 {
-	"username":	"HarmonicWave1",
-	"password":	"b35tP455word3v3r"
+	"username":	"HarmonicWave1"
 }
 ```
 **Response:**
 ```json
 {
-	"message":	"Login successful",
-	"token":	"3udjn24"
+	"message":	"Login successful"
 }
 ```
 
