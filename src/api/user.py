@@ -43,17 +43,17 @@ def create_user(user: userCreateRequest):
 @router.post("/user/login")
 def user_login(username):
     with db.engine.begin() as connection:
-        user = connection.execute(sqlalchemy.text("SELECT username, user_id FROM USERS WHERE username = :passeduser"), {"passeduser": username})
-    if (user):
-        result = connection.execute(sqlalchemy.text("INSERT INTO activeusers(user_id) VALUES (:uid)"), {"uid": user.user_id})
-        return {
-            "message": "Login Successful"
-        }
+        user = connection.execute(sqlalchemy.text("SELECT username, user_id FROM USERS WHERE username = :passeduser"), {"passeduser": username}).fetchone()
+        if (user):
+            result = connection.execute(sqlalchemy.text("INSERT INTO activeusers(user_id) VALUES (:uid)"), {"uid": user.user_id})
+            return {
+                "message": "Login Successful"
+            }
 
-    else:
-        return {
-            "message": "Login Failed"
-        }
+        else:
+            return {
+                "message": "Login Failed"
+            }
 
 # user logout
 # POST
