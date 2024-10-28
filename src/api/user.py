@@ -12,3 +12,13 @@ router = APIRouter(
     tags=["user"],
     dependencies=[Depends(auth.get_api_key)],
 )
+
+# user signup
+# POST
+
+
+# user login
+# POST
+
+# user logout
+# POST
