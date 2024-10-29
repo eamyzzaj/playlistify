@@ -32,11 +32,15 @@ def create_user(user: userCreateRequest):
                         VALUES (:username, :name)
                         RETURNING user_id
                         """)
+    try:
+        with db.engine.begin() as connection:
+            newuser_id = connection.execute(user_insert_sql, new_user).scalar()
+        return {"message": 'Account created successfully', "user_id": newuser_id}
+    except Exception as e:
+        print(f"Account creation failed: {e}")
+        return {"message": 'Account creation failed', "user_id": None}
     
-    with db.engine.begin() as connection:
-        newuser_id = connection.execute(user_insert_sql, new_user).scalar()
     
-    return newuser_id
 
 # user login - ivana
 # POST
