@@ -61,3 +61,23 @@ def user_login(username):
 
 # user logout
 # POST
+@router.post("/logout")
+def user_logout(username: str):
+    # Check if the user is in the activeusers table
+    with db.engine.begin() as connection:
+        active_user = connection.execute(
+            sqlalchemy.text("SELECT user_id FROM activeusers WHERE user_id = (SELECT user_id FROM USERS WHERE username = :passeduser)"),
+            {"passeduser": username}
+        ).fetchone()
+
+        # If user is found in activeusers, proceed to log them out
+        if active_user:
+            # Remove the user from activeusers table to log them out
+            connection.execute(
+                sqlalchemy.text("DELETE FROM activeusers WHERE user_id = :uid"),
+                {"uid": active_user.user_id}
+            )
+            return {"message": "Logout successful"}
+        else:
+            return {"message": "Logout failed - user not logged in"}
+        
