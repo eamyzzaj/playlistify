@@ -19,7 +19,7 @@ class userCreateRequest(BaseModel):
     username: str
     name: str
 
-@router.post("/user/signup")
+@router.post("/signup")
 def create_user(user: userCreateRequest):
 
     new_user = {
@@ -44,7 +44,7 @@ def create_user(user: userCreateRequest):
 
 # user login - ivana
 # POST
-@router.post("/user/login")
+@router.post("/login")
 def user_login(username):
     with db.engine.begin() as connection:
         user = connection.execute(sqlalchemy.text("SELECT username, user_id FROM USERS WHERE username = :passeduser"), {"passeduser": username}).fetchone()
