@@ -43,3 +43,25 @@ def join_competitions(username: str, compid: int ):
         return {
             "message": "OK"
         }
+    
+@router.post("/{competition_id}/vote")
+def vote_on_playlist(competition_id: int, playlist_id: int, vote: int):
+    """
+    Vote on a specific playlist in a competition\n
+    Votes are integers: 1-5
+    """
+    return "OK"
+
+@router.get("/{competition_id}/status")
+def get_competition_status(competition_id: int):
+    """
+    Get status of specific competition\n
+    Returns winner's playlist id, username, and message about comp outcome
+    """
+    comp_status = {
+        "winner_playlist_id": "",
+        "winner_username": "",
+        "message": "Competition by this name ended in this way"
+    }
+
+    return comp_status
