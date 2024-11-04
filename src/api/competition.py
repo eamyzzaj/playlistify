@@ -1,9 +1,11 @@
 #competitions.py
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from pydantic import BaseModel
 from src.api import auth
 
 import sqlalchemy
+from sqlalchemy import text
+
 from src import database as db
 from src.api import user
 
@@ -31,6 +33,7 @@ def get_competitions():
             )
     return comp_list
 
+
 @router.post("/join")
 def join_competitions(username: str, compid: int ):
     #update the competitions table (if competition is active) to update the number of active players
@@ -46,6 +49,7 @@ def join_competitions(username: str, compid: int ):
             "message": "OK"
         }
     
+
 @router.post("/{competition_id}/vote")
 def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, vote: int):
     """
@@ -71,6 +75,7 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
         print(f"Error trying to vote: {e}")
         return "Vote unsuccessful"
     return "OK"
+
 
 @router.get("/{competition_id}/status")
 def get_competition_status(comp_id: int):
@@ -130,3 +135,168 @@ def get_competition_status(comp_id: int):
         print(f"{formatted}")
 
     return overall_comp_status
+
+
+class SongRequest(BaseModel):
+    user_id: int
+    song_id: int
+    song_title: str
+    artist: str
+
+
+@router.post("/{competition_id}/playlists/songs")
+def add_song_to_playlist(competition_id: int, song_request: SongRequest):
+    song_id = song_request.song_id
+    song_title = song_request.song_title
+    artist = song_request.artist
+    user_id = song_request.user_id
+
+    with db.engine.begin() as connection:
+        # check if the competition exists and is active, user enrollment, and user's playlist
+        query = text("""
+            SELECT c.status AS competition_status, uc.enrollment_status, p.playlist_id
+            FROM competitions c
+            LEFT JOIN usercompetitions uc ON uc.competition_id = c.competition_id AND uc.user_id = :user_id
+            LEFT JOIN playlists p ON p.competition_id = c.competition_id AND p.user_id = :user_id
+            WHERE c.competition_id = :competition_id
+        """)
+        result = connection.execute(query, {"competition_id": competition_id, "user_id": user_id}).fetchone()
+
+        if not result or result.competition_status != 'active':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition not active or not found")
+        
+        if not result.enrollment_status:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not enrolled in the competition")
+
+        playlist_id = result.playlist_id
+
+        # if the user doesn't have a playlist, create a new one
+        if not playlist_id:
+            create_playlist_sql = text("""
+                INSERT INTO playlists (user_id, competition_id)
+                VALUES (:user_id, :competition_id)
+                RETURNING playlist_id
+            """)
+            playlist_id = connection.execute(create_playlist_sql, {"user_id": user_id, "competition_id": competition_id}).scalar()
+
+            # update the usercompetitions table with the new playlist_id
+            update_user_comp_sql = text("""
+                UPDATE usercompetitions
+                SET playlist_id = :playlist_id
+                WHERE user_id = :user_id AND competition_id = :competition_id
+            """)
+            connection.execute(update_user_comp_sql, {"playlist_id": playlist_id, "user_id": user_id, "competition_id": competition_id})
+
+        # check if the song exists, if not insert it
+        song_exists_sql = text("""
+            INSERT INTO songs (song_id, song_title, artist)
+            VALUES (:song_id, :song_title, :artist)
+            ON CONFLICT (song_id) DO NOTHING
+        """)
+        connection.execute(song_exists_sql, {"song_id": song_id, "song_title": song_title, "artist": artist})
+
+
+        # check if the song is already in the user's playlist
+        song_in_playlist_sql = text("""
+            SELECT id FROM playlistsongs
+            WHERE playlist_id = :playlist_id AND song_id = :song_id
+        """)
+        song_in_playlist = connection.execute(song_in_playlist_sql, {"playlist_id": playlist_id, "song_id": song_id}).fetchone()
+            
+        if song_in_playlist:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Song already in playlist")
+
+        # determine the song_order
+        song_order_sql = text("""
+            SELECT COUNT(*) FROM playlistsongs
+            WHERE playlist_id = :playlist_id
+        """)
+        song_order = connection.execute(song_order_sql, {"playlist_id": playlist_id}).scalar() + 1
+
+        # add the song to the PlaylistSongs table
+        add_song_to_playlist_sql = text("""
+            INSERT INTO playlistsongs (playlist_id, song_id, song_order)
+            VALUES (:playlist_id, :song_id, :song_order)
+        """)
+        connection.execute(add_song_to_playlist_sql, {"playlist_id": playlist_id, "song_id": song_id, "song_order": song_order})
+
+    response = {
+        "message": "Song successfully added to playlist",
+        "playlist_status": True,
+        "song_details": {
+            "song_id": song_id,
+            "song_title": song_title,
+            "artist": artist
+        }
+    }
+
+    return response
+
+
+class SubmitPlaylistRequest(BaseModel):
+    user_id: int
+    playlist_id: int
+    competition_id: int
+
+
+@router.post("/{competition_id}/submit")
+def submit_playlist(competition_id: int, request_body: SubmitPlaylistRequest):
+    user_id = request_body.user_id
+    playlist_id = request_body.playlist_id
+    competition_id_body = request_body.competition_id
+
+    # make sure competition id in url matches the one in the request body
+    if competition_id != competition_id_body:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition ID mismatch")
+    
+    with db.engine.begin() as connection:
+        # checks for competition status, user enrollment, and playlist ownership
+        query = text("""
+            SELECT c.status AS competition_status,
+                   uc.enrollment_status,
+                   uc.submission_status,
+                   p.user_id AS playlist_owner_id
+            FROM competitions c
+            JOIN usercompetitions uc ON uc.competition_id = c.competition_id AND uc.user_id = :user_id
+            JOIN playlists p ON p.playlist_id = :playlist_id
+            WHERE c.competition_id = :competition_id AND p.competition_id = :competition_id
+        """)
+        result = connection.execute(query, {
+            "competition_id": competition_id,
+            "user_id": user_id,
+            "playlist_id": playlist_id
+        }).fetchone()
+
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Competition or playlist not found")
+
+        if result.competition_status != 'active':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition is not active")
+
+        if not result.enrollment_status:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not enrolled in the competition")
+
+        if result.submission_status:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Playlist already submitted")
+
+        if result.playlist_owner_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not own the playlist")
+
+        # update submission_status in usercompetitions table
+        update_submission_sql = text("""
+            UPDATE usercompetitions
+            SET submission_status = TRUE
+            WHERE user_id = :user_id AND competition_id = :competition_id
+        """)
+
+        connection.execute(update_submission_sql, {
+            "user_id": user_id,
+            "competition_id": competition_id
+        })
+
+
+    response = {
+        "message": "Playlist submission successful",
+        "submission_status": True
+    }
+    return response
