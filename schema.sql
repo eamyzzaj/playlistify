@@ -6,7 +6,7 @@ CREATE TABLE Users (
     signup_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Playlists Table (before Competitions and UserCompetitions to resolve foreign key dependencies)
+-- Create Playlists Table
 CREATE TABLE Playlists (
     playlist_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
