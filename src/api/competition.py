@@ -77,23 +77,40 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
     Votes are integers: 1-5
     """
 
+    if vote not in [1,2,3,4,5]:
+        raise HTTPException(status_code=400, detail='Not a valid vote')
+    
     vote_info = {
         "voter_id": voter_user_id,
         "playlist_id": playlist_id,
         "vote_score": vote
     }
 
+    playlist_exists_sql = sqlalchemy.text("""
+                                    SELECT 1
+                                    FROM playlists
+                                    WHERE playlist_id = :playlist_id
+                                        """)
+
+
     insert_vote_sql = sqlalchemy.text("""
                                     INSERT INTO votes (voter_user_id, playlist_id, vote_score)
                                     VALUES (:voter_id, :playlist_id, :vote_score)
                                         """)
-    
+
     try:
         with db.engine.begin() as connection:
+            result = connection.execute(playlist_exists_sql, {"playlist_id": playlist_id}).fetchone()
+
+        if not result:
+            raise HTTPException(status_code=404, detail='Playlist not found')
+
+        with db.engine.begin() as connection:
             connection.execute(insert_vote_sql, vote_info)
+
     except Exception as e:
-        print(f"Error trying to vote: {e}")
-        return "Vote unsuccessful"
+        print(f"Error with client trying to vote: \n{e}")
+        raise HTTPException(status_code=404, detail=f"Vote unsuccessful")
     return "OK"
 
 
@@ -108,6 +125,12 @@ def get_competition_status(comp_id: int):
         "winner_username": None,
         "message": None
     }
+
+    comp_exists_sql = sqlalchemy.text("""
+                                    SELECT 1
+                                    FROM competitions
+                                    WHERE competition_id = :competition_id
+                                        """)
 
     comp_status_sql = sqlalchemy.text("""
                                     SELECT winner_playlist_id, 
@@ -124,8 +147,14 @@ def get_competition_status(comp_id: int):
     
     try:
         with db.engine.begin() as connection:
-            comp_results = connection.execute(comp_status_sql, {"competition_id": comp_id}).fetchone()
+            comp_exists = connection.execute(comp_exists_sql,  {"competition_id": comp_id}).fetchone()
 
+        if not comp_exists:
+            raise HTTPException(status_code=404, detail="Competition not found")   
+            
+        with db.engine.begin() as connection:
+            comp_results = connection.execute(comp_status_sql, {"competition_id": comp_id}).fetchone()
+        
         comp_status = comp_results.status
 
         if comp_status == 'active':
@@ -141,20 +170,23 @@ def get_competition_status(comp_id: int):
                                 f"User {winner_username} won with a score of {playlist_score} on their playlist!\\n" \
                                 f"Total participants: {num_players}\\n" \
                                 f"Competition length: {comp_length} minutes"
-            
+
+        overall_comp_status['winner_playlist_id'] = winner_playlist
+        overall_comp_status['winner_username'] = winner_username            
         overall_comp_status['message'] = comp_message
 
+        # for console logging
+        if overall_comp_status['message']:
+            print(f"Comp status GET results message:\n")
+            formatted = overall_comp_status['message'].replace('\\n', '\n')
+            print(f"{formatted}")
+
+        return overall_comp_status
+
     except Exception as e:
-        print(f"Error retreving competition's status: {e}")
-        return "Competition not found"
+        print(f"Error with client retrieving competition status: \n{e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving competition status")
 
-    # for console logging
-    if overall_comp_status['message']:
-        print(f"Comp status GET results message:\n")
-        formatted = overall_comp_status['message'].replace('\\n', '\n')
-        print(f"{formatted}")
-
-    return overall_comp_status
 
 
 class SongRequest(BaseModel):
