@@ -149,28 +149,34 @@ Christian logs off after casting his vote.
 ```
 
 # Testing Results
-## 1. Christian Logs In 
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/user/login?username=HarmonicWave'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'   -d ''
+
+## 1. Christian Logs In
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/user/login?username=HarmonicWave' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE' \
+  -d ''
 ```
 
-Response 
+### Response:
 ```json
 {
   "message": "Login Successful"
 }
 ```
-[Content continues here with the full Markdown format...]
-
 
 ## 2. Christian Looks for a Competition to Join
-Curl statement 
-```
-curl -X 'GET'   'http://127.0.0.1:3000/competition/'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'
+### Curl Statement:
+```bash
+curl -X 'GET' \
+  'http://127.0.0.1:3000/competition/' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'
 ```
 
-Response 
+### Response:
 ```json
 [
   {
@@ -187,12 +193,16 @@ Response
 ```
 
 ## 3. Christian Joins the Competition
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/competition/join?username=HarmonicWave&compid=1'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'   -d ''
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/competition/join?username=HarmonicWave&compid=1' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE' \
+  -d ''
 ```
 
-Response 
+### Response:
 ```json
 {
   "message": "OK"
@@ -200,17 +210,22 @@ Response
 ```
 
 ## 4. Christian adds songs to his playlist
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/competition/1/playlists/songs'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'   -H 'Content-Type: application/json'   -d '{
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/competition/1/playlists/songs' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE' \
+  -H 'Content-Type: application/json' \
+  -d '{
   "user_id": 6,
   "song_id": 1,
   "song_title": "Juna",
   "artist": "Clairo"
-}
+}'
 ```
 
-Response 
+### Response:
 ```json
 {
   "message": "Song successfully added to playlist",
@@ -224,16 +239,21 @@ Response
 ```
 
 ## 5. Christian submits his finished playlist for voting
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/competition/1/submit'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'   -H 'Content-Type: application/json'   -d '{
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/competition/1/submit' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE' \
+  -H 'Content-Type: application/json' \
+  -d '{
   "user_id": 6,
   "playlist_id": 5,
   "competition_id": 1
-}
+}'
 ```
 
-Response 
+### Response:
 ```json
 {
   "message": "Playlist submission successful",
@@ -242,24 +262,34 @@ Response
 ```
 
 ## 6. Christian votes on the playlists
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/competition/1/vote?playlist_id=5&voter_user_id=6&vote=5'   -H 'accept: application/json'   -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE'   -d ''
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/competition/1/vote?playlist_id=5&voter_user_id=6&vote=5' \
+  -H 'accept: application/json' \
+  -H 'access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbmpoZnFsemR6YmViaW5ieHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwNzg4NjAsImV4cCI6MjA0NTY1NDg2MH0.p32MA6K5Z64pIeeQEr9TLSWVklq-E-z8zU6x84rNChE' \
+  -d ''
 ```
 
-Response 
+### Response:
+```json
 "OK"
+```
 
 ## 7. Christian Logs off
-Curl statement 
-```
-curl -X 'POST'   'http://127.0.0.1:3000/user/logoff'   -H 'accept: application/json'   -H 'Content-Type: application/json'   -d '{"username": "HarmonicWave1"}'
+### Curl Statement:
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:3000/user/logoff' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"username": "HarmonicWave1"}'
 ```
 
-Response 
+### Response:
 ```json
 {
-    "message": "Logoff successful"
+  "message": "Logoff successful"
 }
 ```
 
