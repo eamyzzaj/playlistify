@@ -81,3 +81,59 @@ def user_logout(username: str):
         else:
             return {"message": "Logout failed - user not logged in"}
         
+
+@router.get("/{user_id}/competitions", tags=["user"])
+def get_user_competitions(user_id: int):
+    competitions = []
+
+    with db.engine.begin() as connection:
+        # SQL query to get competitions where the user has participated
+        competitions_query = sqlalchemy.text("""
+            SELECT competition_id FROM usercompetitions
+            WHERE user_id = :user_id AND enrollment_status = TRUE
+        """)
+
+        # Execute the query and fetch results
+        result = connection.execute(competitions_query, {"user_id": user_id}).fetchall()
+
+        # Format the response as a list of competition IDs
+        competitions = [{"competition_id": row.competition_id} for row in result]
+
+    return {"user_competitions": competitions}
+
+@router.get("/{user_id}/all/playlists", tags=["user"])
+def get_all_user_playlists(user_id: int):
+    playlists = []
+
+    with db.engine.begin() as connection:
+        # SQL query to retrieve all playlists the user has submitted across competitions
+        playlists_query = sqlalchemy.text("""
+            SELECT p.playlist_id, p.competition_id, s.song_id, s.song_title
+            FROM playlists AS p
+            JOIN playlistsongs AS ps ON p.playlist_id = ps.playlist_id
+            JOIN songs AS s ON ps.song_id = s.song_id
+            WHERE p.user_id = :user_id
+        """)
+
+        # Execute the query and fetch results
+        result = connection.execute(playlists_query, {"user_id": user_id}).fetchall()
+
+        # Organize playlists with songs grouped under each playlist ID
+        playlists_dict = {}
+        for row in result:
+            if row.playlist_id not in playlists_dict:
+                playlists_dict[row.playlist_id] = {
+                    "user_id": user_id,
+                    "competition_id": row.competition_id,
+                    "playlist_id": row.playlist_id,
+                    "songs": []
+                }
+            playlists_dict[row.playlist_id]["songs"].append({
+                "song_id": row.song_id,
+                "song_title": row.song_title
+            })
+
+        # Convert the dictionary to a list format for the response
+        playlists = list(playlists_dict.values())
+
+    return {"user_playlists": playlists}
