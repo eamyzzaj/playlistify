@@ -1,7 +1,8 @@
 from fastapi import FastAPI, exceptions
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from src.api import user, competition
+from src.api import users
+from src.api import competitions
 import json
 import logging
 import sys
@@ -34,8 +35,8 @@ app.add_middleware(
 )
 
 
-app.include_router(user.router)
-app.include_router(competition.router)
+app.include_router(users.router)
+app.include_router(competitions.router)
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)

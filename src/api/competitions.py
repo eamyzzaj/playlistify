@@ -7,13 +7,13 @@ import sqlalchemy
 from sqlalchemy import text
 
 from src import database as db
-from src.api import user
+from src.api import users
 
 import json
 
 router = APIRouter(
-    prefix="/competition",
-    tags=["competition"],
+    prefix="/competitions",
+    tags=["competitions"],
     dependencies=[Depends(auth.get_api_key)],
 )
 

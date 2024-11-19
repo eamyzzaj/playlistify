@@ -139,7 +139,7 @@ Get a user’s playlist from a specific competition.
 
 # User API
 
-## 2.1 Get User Competitions - `/user/{user_id}/competitions` (GET)
+## 2.1 Get User Competitions - `/users/{user_id}/competitions` (GET)
 Get all competitions a user has participated in or is currently participating in.
 
 **Request:**
@@ -158,7 +158,7 @@ Get all competitions a user has participated in or is currently participating in
 ]
 ```
 
-## 2.2 Get All User’s Playlists - `/user/{user_id}/all/playlists` (GET)
+## 2.2 Get All User’s Playlists - `/users/{user_id}/all/playlists` (GET)
 Get all of a user’s submitted playlists from past competitions.
 
 **Request:**
@@ -180,7 +180,7 @@ Get all of a user’s submitted playlists from past competitions.
 ]
 ```
 
-## 2.3 Create User Account - `/user/signup` (POST)
+## 2.3 Create User Account - `/users/` (POST)
 Create a new account for a user.
 
 **Request:**
@@ -207,7 +207,7 @@ Create a new account for a user.
 }
 ```
 
-## 2.4 User Logs in to Account - `/user/login` (POST)
+## 2.4 User Logs in to Account - `/users/sessions` (POST)
 Upon logging in, user is added to an active users table.
 
 **Request:**
@@ -222,7 +222,6 @@ Upon logging in, user is added to an active users table.
 ```json
 {
   "message": "string",  /* will indicate success/failure */
-  "token": "string"  /* auth token */
 }
 ```
 
@@ -252,4 +251,29 @@ Get all playlistify users.
 **Response (No Users Found):**
 ```json
 []
+```
+
+## 2.6 Get User Voting Pattern Trends - `/users/{user_id}` (GET)
+Gets insights into how a user's voting behavior has evolved across different competitions.
+
+**Response:**
+```json
+{
+  "user_id": "integer",                    /* ID of the user */
+  "total_votes_cast": "integer",           /* total number of votes cast by the user */
+  "average_score_given": "float",          /* average score given by the user */
+  "voting_trend_analysis": [               /* array of voting trend details */
+    {
+      "vote_id": "integer",                /* ID of the vote */
+      "vote_score": "integer",             /* score given in this vote */
+      "previous_vote_score": "integer or null", /* previous vote score, null if not available */
+      "next_vote_score": "integer or null"      /* next vote score, null if not available */
+    },
+    {
+      "...": "..."
+    }
+  ],
+  "message": "string"                      /* success or failure message */
+}
+
 ```
