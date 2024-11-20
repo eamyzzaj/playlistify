@@ -253,7 +253,7 @@ Get all playlistify users.
 []
 ```
 
-## 2.6 Get User Voting Pattern Trends - `/users/{user_id}` (GET)
+## 2.6 Get User Voting Pattern Trends - `/users/{user_id}/voting-pattern-trends` (GET)
 Gets insights into how a user's voting behavior has evolved across different competitions.
 
 **Response:**
