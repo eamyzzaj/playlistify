@@ -73,12 +73,12 @@ def join_competitions(username: str, compid: int ):
 @router.post("/{competition_id}/vote")
 def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, vote: int):
     """
-    Vote on a specific playlist in a competition\n
+    Vote on a specific playlist in a competition
     Votes are integers: 1-5
     """
 
-    if vote not in [1,2,3,4,5]:
-        raise HTTPException(status_code=400, detail='Not a valid vote')
+    if vote not in [1, 2, 3, 4, 5]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not a valid vote')
     
     vote_info = {
         "voter_id": voter_user_id,
@@ -86,32 +86,157 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
         "vote_score": vote
     }
 
+    # check if the playlist exists
     playlist_exists_sql = sqlalchemy.text("""
-                                    SELECT 1
-                                    FROM playlists
-                                    WHERE playlist_id = :playlist_id
-                                        """)
+        SELECT competition_id
+        FROM playlists
+        WHERE playlist_id = :playlist_id
+    """)
 
+    # check if the user has already voted on this playlist
+    vote_exists_sql = sqlalchemy.text("""
+        SELECT 1
+        FROM votes
+        WHERE voter_user_id = :voter_id AND playlist_id = :playlist_id
+    """)
 
+    # check if all other users have submitted their playlists
+    all_others_submitted_sql = sqlalchemy.text("""
+        SELECT COUNT(*) AS not_submitted_count
+        FROM usercompetitions
+        WHERE competition_id = :competition_id AND user_id != :voter_id AND submission_status = FALSE
+    """)
+
+    # insert the vote
     insert_vote_sql = sqlalchemy.text("""
-                                    INSERT INTO votes (voter_user_id, playlist_id, vote_score)
-                                    VALUES (:voter_id, :playlist_id, :vote_score)
-                                        """)
+        INSERT INTO votes (voter_user_id, playlist_id, vote_score)
+        VALUES (:voter_id, :playlist_id, :vote_score)
+    """)
+
+    # increment total votes for the playlist
+    increment_total_votes_sql = sqlalchemy.text("""
+        UPDATE playlists
+        SET total_votes = total_votes + 1
+        WHERE playlist_id = :playlist_id
+    """)
+
+    # query to calculate the average score if total votes match participant count
+    update_average_score_sql = sqlalchemy.text("""
+        WITH participant_count AS (
+            SELECT COUNT(*) AS participant_count
+            FROM usercompetitions
+            WHERE competition_id = :competition_id AND enrollment_status = TRUE
+        )
+        UPDATE playlists
+        SET average_score = COALESCE((
+            SELECT AVG(vote_score)
+            FROM votes
+            WHERE votes.playlist_id = playlists.playlist_id
+        ), 0)
+        WHERE playlist_id = :playlist_id AND (
+            SELECT total_votes FROM playlists WHERE playlist_id = :playlist_id
+        ) = (
+            SELECT participant_count FROM participant_count
+        )
+    """)
+
+    # query to check if competition can be marked as completed
+    check_and_update_competition_sql = sqlalchemy.text("""
+        WITH vote_counts AS (
+            SELECT playlist_id, COUNT(*) AS vote_count
+            FROM votes
+            WHERE playlist_id IN (SELECT playlist_id FROM playlists WHERE competition_id = :competition_id)
+            GROUP BY playlist_id
+        ),
+        participant_count AS (
+            SELECT COUNT(*) AS participant_count
+            FROM usercompetitions
+            WHERE competition_id = :competition_id AND enrollment_status = TRUE
+        ),
+        winning_playlist AS (
+            SELECT playlist_id
+            FROM playlists
+            WHERE competition_id = :competition_id
+            ORDER BY average_score DESC
+            LIMIT 1
+        )
+        UPDATE competitions
+        SET status = 'completed',
+            end_time = CURRENT_TIMESTAMP,
+            winner_playlist_id = (SELECT playlist_id FROM winning_playlist)
+        WHERE competition_id = :competition_id AND (
+            SELECT COUNT(*)
+            FROM vote_counts vc, participant_count pc
+            WHERE vc.vote_count = pc.participant_count
+        ) = (
+            SELECT COUNT(*) FROM playlists WHERE competition_id = :competition_id
+        )
+    """)
+
+    # query to update average score for all playlists in a completed competition
+    update_all_average_scores_sql = sqlalchemy.text("""
+        UPDATE playlists
+        SET average_score = COALESCE((
+            SELECT AVG(vote_score)
+            FROM votes
+            WHERE votes.playlist_id = playlists.playlist_id
+        ), 0)
+        WHERE competition_id = :competition_id
+    """)
 
     try:
         with db.engine.begin() as connection:
+            # check if playlist exists
             result = connection.execute(playlist_exists_sql, {"playlist_id": playlist_id}).fetchone()
+            if not result:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Playlist not found')
 
-        if not result:
-            raise HTTPException(status_code=404, detail='Playlist not found')
+            # check if the user has already voted on this playlist
+            vote_result = connection.execute(vote_exists_sql, {
+                "voter_id": voter_user_id,
+                "playlist_id": playlist_id
+            }).fetchone()
+            if vote_result:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User has already voted on this playlist')
 
-        with db.engine.begin() as connection:
+            # check if all other users have submitted their playlists
+            not_submitted_count = connection.execute(all_others_submitted_sql, {
+                "competition_id": competition_id,
+                "voter_id": voter_user_id
+            }).scalar()
+            if not_submitted_count > 0:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not all other users have submitted their playlists')
+
+            # insert the vote
             connection.execute(insert_vote_sql, vote_info)
 
-    except Exception as e:
+            # increment total votes for the playlist
+            connection.execute(increment_total_votes_sql, {
+                "playlist_id": playlist_id
+            })
+
+            # update average score for the playlist if total votes match participant count
+            connection.execute(update_average_score_sql, {
+                "playlist_id": playlist_id,
+                "competition_id": competition_id
+            })
+
+            # update competition status if all votes are in
+            connection.execute(check_and_update_competition_sql, {
+                "competition_id": competition_id
+            })
+
+            # ff competition is completed, update average scores for all playlists
+            connection.execute(update_all_average_scores_sql, {
+                "competition_id": competition_id
+            })
+
+    except sqlalchemy.exc.SQLAlchemyError as e:
         print(f"Error with client trying to vote: \n{e}")
-        raise HTTPException(status_code=404, detail=f"Vote unsuccessful")
-    return "OK"
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Vote unsuccessful due to server error')
+    
+    return {"message": "Vote successful"}
+
 
 
 @router.get("/{competition_id}/status")
