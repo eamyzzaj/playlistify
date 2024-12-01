@@ -13,3 +13,6 @@ src/api/__pycache__/
 
 # Ignore other system files
 .DS_Store
+
+# Ignore files for docker testing
+docker_testing/
