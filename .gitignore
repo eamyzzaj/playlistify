@@ -16,3 +16,4 @@ src/api/__pycache__/
 
 # Ignore files for docker testing
 docker_testing/
+docker-compose.yml
