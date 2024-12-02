@@ -41,6 +41,7 @@ def join_competitions(username: str, compid: int ):
     with db.engine.begin() as connection:
         get_user_id = connection.execute(sqlalchemy.text("SELECT user_id FROM users WHERE username = :passeduser"), {"passeduser": username}).scalar()
 
+
         #first check if the user is in that competition:
         is_in_comp = connection.execute(sqlalchemy.text("""
             SELECT enrollment_status
@@ -51,15 +52,16 @@ def join_competitions(username: str, compid: int ):
             SELECT status
             FROM competitions
             WHERE competition_id = :competitionid"""), {"competitionid": compid}).scalar()
+        
+        if is_in_comp is None:
+            raise HTTPException(status_code = 404, detail = "competition not found")
+        
         if is_in_comp:
-            return {
-                "message": "already enrolled in competition"
-            }
+            raise HTTPException(status_code = 400, detail = "already enrolled in competition")
         
         if is_active == "completed":
-            return {
-                "message": "competition has already concluded"
-            }
+            raise HTTPException(status_code = 404, detail = "competition has already concluded")
+            
         join_comp = connection.execute(sqlalchemy.text("""UPDATE competitions SET participants_count = participants_count + 1
                                                         WHERE competition_id = :competitionid """), {"competitionid": compid})
         add_to_user = connection.execute(sqlalchemy.text("""INSERT INTO usercompetitions(user_id, competition_id, enrollment_status, submission_status) 
