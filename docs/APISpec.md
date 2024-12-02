@@ -8,7 +8,7 @@ Fetches all competitions (both current and past). Each competition has specific 
 ```json
 [
   {
-    "competition_id": "string", 
+    "competition_id": "integer", 
     "status": "string",
     "participants": "integer"
   },
@@ -34,7 +34,7 @@ Enrolls a user into a live competition. The `competition_id` must reference an a
   "message": "string", /* Success message or failure reason */
   "enrollment_status": "boolean", /* true if enrollment is successful, false otherwise */
   "competition_details": {
-    "competition_id": "string", /* ID of the competition */
+    "competition_id": "integer", /* ID of the competition */
     "username": "string", /* Username of the participant */
     "start_time": "string" /* ISO 8601 format of the competition's start time */
   }
@@ -73,7 +73,7 @@ Allows a user to submit their playlist after adding all the desired songs during
 ```json
 {
   "playlist_id": "string",
-  "competition_id": "string"
+  "competition_id": "integer"
 }
 ```
 
@@ -122,8 +122,8 @@ Get a user’s playlist from a specific competition.
 **Request:**
 ```json
 {
-  "user_id": "number",
-  "competition_id": "number"
+  "user_id": "integer",
+  "competition_id": "integer"
 }
 ```
 
@@ -173,7 +173,7 @@ Get all of a user’s submitted playlists from past competitions.
 [
   {
     "user_id": "number",
-    "competition_id": "number",
+    "competition_id": "integer",
     "playlist_id": "number",
     "songs": "List[string]"
   }
