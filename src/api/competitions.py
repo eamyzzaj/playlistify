@@ -258,31 +258,39 @@ def get_competition_status(comp_id: int):
                                         """)
 
     comp_status_sql = sqlalchemy.text("""
+                                    SELECT status
+                                    FROM competitions
+                                    WHERE competitions.competition_id = :competition_id
+                                    """)
+    
+    comp_details_sql = sqlalchemy.text("""
                                     SELECT winner_playlist_id, 
                                             status,
                                             participants_count,
                                             users.username AS username,
                                             playlists.average_score AS avg_score,
-                                            age(end_time, start_time) AS comp_length
+                                            CASE
+                                                WHEN end_time IS NOT NULL THEN age(end_time, start_time)
+                                                ELSE '00:00:00'::interval
+                                            END AS comp_length
                                     FROM competitions
                                     LEFT JOIN playlists ON playlists.playlist_id = winner_playlist_id
                                     LEFT JOIN users ON users.user_id = playlists.user_id
                                     WHERE competitions.competition_id = :competition_id
-                                        """)
+                                        """) 
     
     try:
         with db.engine.begin() as connection:
             comp_exists = connection.execute(comp_exists_sql,  {"competition_id": comp_id}).fetchone()
-
-        if not comp_exists:
-            raise HTTPException(status_code=404, detail="Competition not found")   
+            
+            if not comp_exists:
+                raise HTTPException(status_code=404, detail="Competition not found")
             
         with db.engine.begin() as connection:
-            comp_results = connection.execute(comp_status_sql, {"competition_id": comp_id}).fetchone()
-        
-        comp_status = comp_results.status
+            comp_status = connection.execute(comp_status_sql, {"competition_id": comp_id}).fetchone() 
+            comp_results = connection.execute(comp_details_sql, {"competition_id": comp_id}).fetchone()
 
-        if comp_status == 'active':
+        if comp_status == ('active',):
             comp_message = "Competition is still in progress - check again later!"
         else:
             winner_playlist = comp_results.winner_playlist_id
@@ -295,9 +303,9 @@ def get_competition_status(comp_id: int):
                                 f"User {winner_username} won with a score of {playlist_score} on their playlist!\\n" \
                                 f"Total participants: {num_players}\\n" \
                                 f"Competition length: {comp_length} minutes"
-
-        overall_comp_status['winner_playlist_id'] = winner_playlist
-        overall_comp_status['winner_username'] = winner_username            
+            overall_comp_status['winner_playlist_id'] = winner_playlist
+            overall_comp_status['winner_username'] = winner_username        
+        
         overall_comp_status['message'] = comp_message
 
         # for console logging
@@ -308,6 +316,8 @@ def get_competition_status(comp_id: int):
 
         return overall_comp_status
 
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Error with client retrieving competition status: \n{e}")
         raise HTTPException(status_code=500, detail=f"Error retrieving competition status")
