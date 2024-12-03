@@ -496,7 +496,6 @@ def submit_playlist(competition_id: int, request_body: SubmitPlaylistRequest):
 
 
     response = {
-        "message": "Playlist submission successful",
-        "submission_status": True
+        "message": "Playlist submission successful"
     }
     return response
