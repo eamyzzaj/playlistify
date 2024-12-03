@@ -18,7 +18,7 @@ Fetches all competitions (both current and past). Each competition has specific 
 ]
 ```
 
-## 1.2 Join Competition - `/competitions/{competition_id}/join` (POST)
+## 1.2 Join Competition - `/competitions/{competition_id}/participants` (POST)
 Enrolls a user into a live competition. The `competition_id` must reference an active competition. Users can submit details like their username and score when joining the competition.
 
 **Request:**
