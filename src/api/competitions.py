@@ -7,9 +7,7 @@ import sqlalchemy
 from sqlalchemy import text
 
 from src import database as db
-from src.api import users
 
-import json
 
 router = APIRouter(
     prefix="/competitions",
