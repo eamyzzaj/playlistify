@@ -96,7 +96,7 @@ def user_logout(username: str):
             )
             return {"message": "Logout successful"}
         else:
-            return {"message": "Logout failed - user not logged in"}
+            raise HTTPException(status_code = 404, detail = 'User not found')
         
 
 @router.get("/{user_id}/competitions", tags=["users"])
