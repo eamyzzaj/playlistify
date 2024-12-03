@@ -357,7 +357,7 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
 
     with db.engine.begin() as connection:
         # check if the competition exists and is active, user enrollment, and user's playlist
-        query = text("""
+        status_query = text("""
             SELECT c.status AS competition_status, uc.enrollment_status, p.user_id as user_id
             FROM competitions c
             LEFT JOIN usercompetitions uc ON uc.competition_id = c.competition_id
