@@ -95,7 +95,6 @@ Allows users to vote for the best playlist in a competition. After submissions, 
 ```json
 {
   "message": "string",  /* Success or failure message */
-  "vote_status": "boolean"  /* true if the vote was successfully submitted */
 }
 ```
 
