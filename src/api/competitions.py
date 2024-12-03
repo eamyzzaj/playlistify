@@ -442,18 +442,13 @@ def add_song_to_playlist(competition_id: int, song_request: SongRequest):
 class SubmitPlaylistRequest(BaseModel):
     user_id: int
     playlist_id: int
-    competition_id: int
+
 
 
 @router.post("/{competition_id}/submit")
 def submit_playlist(competition_id: int, request_body: SubmitPlaylistRequest):
     user_id = request_body.user_id
     playlist_id = request_body.playlist_id
-    competition_id_body = request_body.competition_id
-
-    # make sure competition id in url matches the one in the request body
-    if competition_id != competition_id_body:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition ID mismatch")
     
     with db.engine.begin() as connection:
         # checks for competition status, user enrollment, and playlist ownership
