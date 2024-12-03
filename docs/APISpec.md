@@ -117,26 +117,6 @@ The final results of a competition, revealing the winner and their playlist.
 }
 ```
 
-## 1.7 Get User Playlist - `/competitions/{competition_id}/playlists/user/{user_id}` (GET)
-Get a user’s playlist from a specific competition.
-
-**Request:**
-```json
-{
-  "user_id": "integer",
-  "competition_id": "integer"
-}
-```
-
-**Response:**
-```json
-[
-  {
-    "playlist_id": "number",
-    "songs": "List[string]"
-  }
-]
-```
 
 # User API
 
