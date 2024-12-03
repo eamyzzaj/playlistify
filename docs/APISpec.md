@@ -35,16 +35,13 @@ Enrolls a user into a live competition. The `competition_id` must reference an a
 }
 ```
 
-## 1.3 Add Song to Playlist - `/competitions/{competition_id}/playlists/songs` (POST)
+## 1.3 Add Song to Playlist - `/competitions/{competition_id}/playlists/{playlist_id}/songs` (POST)
 Allows a user to add a song to their playlist during an active competition. The user's identity is extracted from the token in the Authorization header.
 
 **Request:**
 ```json
 {
-  "user_id": "integer",
-  "song_id": "integer",
-  "song_title": "string",
-  "artist": "string"
+  "song_id": "integer"
 }
 ```
 
@@ -87,8 +84,8 @@ Allows users to vote for the best playlist in a competition. After submissions, 
 ```json
 {
   "playlist_id": "integer",
-  "voter_user_id": "integer"
-  "vote": integer
+  "voter_user_id": "integer",
+  "vote": "integer"
 }
 ```
 
