@@ -258,7 +258,7 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         print(f"Error with client trying to vote: \n{e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Vote unsuccessful due to server error')
+        raise HTTPException(status_code= 500,  detail='Vote unsuccessful due to server error')
     
     return {"message": "Vote successful"}
 
@@ -364,12 +364,12 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
         result = connection.execute(query, {"competition_id": competition_id}).fetchone()
         
         if not result or result.competition_status != 'active':
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition not active or not found")
+            raise HTTPException(status_code= 400, detail="Competition not active or not found")
         
         user_id = result.user_id
 
         if not user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not enrolled in the competition")  
+            raise HTTPException(status_code= 403, detail="User not enrolled in the competition")  
 
         # if the user doesn't have a playlist, create a new one
         if not playlist_id:
@@ -397,7 +397,7 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
         song_result = connection.execute(song_exists_sql, {"song_id": song_id}).fetchone()
         
         if not song_result:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
+            raise HTTPException(status_code= 404, detail="Song not found")
         
         song_title, artist = song_result.song_title, song_result.artist
 
@@ -409,7 +409,7 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
         song_in_playlist = connection.execute(song_in_playlist_sql, {"playlist_id": playlist_id, "song_id": song_id}).fetchone()
             
         if song_in_playlist:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Song already in playlist")
+            raise HTTPException(status_code= 400, detail="Song already in playlist")
 
         # determine the song_order
         song_order_sql = text("""
@@ -468,19 +468,19 @@ def submit_playlist(competition_id: int, request_body: SubmitPlaylistRequest):
         }).fetchone()
 
         if not result:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Competition or playlist not found")
+            raise HTTPException(status_code= 404, detail="Competition or playlist not found")
 
         if result.competition_status != 'active':
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition is not active")
+            raise HTTPException(status_code= 400, detail="Competition is not active")
 
         if not result.enrollment_status:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not enrolled in the competition")
+            raise HTTPException(status_code= 403, detail="User is not enrolled in the competition")
 
         if result.submission_status:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Playlist already submitted")
+            raise HTTPException(status_code= 400, detail="Playlist already submitted")
 
         if result.playlist_owner_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not own the playlist")
+            raise HTTPException(status_code= 403, detail="User does not own the playlist")
 
         # update submission_status in usercompetitions table
         update_submission_sql = text("""
