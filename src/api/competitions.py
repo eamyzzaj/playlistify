@@ -35,6 +35,16 @@ def get_competitions():
             )
     return {"competitions": comp_list}
 
+@router.post("/create")
+def create_competition():
+    with db.engine.begin() as connection:
+        new_comp = connection.execute(sqlalchemy.text("""
+                                                            INSERT INTO competitions (status, participants_count, start_time)
+                                                            VALUES ('active', 0, CURRENT_TIMESTAMP)
+                                                            RETURNING competition_id
+
+                                                        """)).scalar()
+    return {"competition_id": new_comp}
 
 @router.post("/participants")
 def join_competitions(username: str, compid: int ):
