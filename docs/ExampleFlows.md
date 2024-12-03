@@ -238,11 +238,10 @@ Once logged in, Amir checks all the competitions he has participated in.
 ```json
 [
    {
-       "competition_id": "RockPlaylist01",
-       "status": "completed"
+       "competition_id": "11",
    },
    {
-      "competition_id": "Jazzvibes2024",
+      "competition_id": "4",
       "status": "active"
    }
 ]
