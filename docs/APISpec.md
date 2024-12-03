@@ -32,13 +32,6 @@ Enrolls a user into a live competition. The `competition_id` must reference an a
 ```json
 {
   "message": "string", /* Success message or failure reason */
-  "enrollment_status": "boolean", /* true if enrollment is successful, false otherwise */
-  "competition_details":
-    {
-      "competition_id": "integer", /* ID of the competition */
-      "username": "string", /* Username of the participant */
-      "start_time": "string" /* ISO 8601 format of the competition's start time */
-    }
 }
 ```
 
