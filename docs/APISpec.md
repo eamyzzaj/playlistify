@@ -88,6 +88,8 @@ Allows users to vote for the best playlist in a competition. After submissions, 
 {
   "playlist_id": "integer",
   "vote_score": "integer"
+  "voter_user_id": "integer"
+  "vote": integer
 }
 ```
 
