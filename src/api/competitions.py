@@ -325,9 +325,9 @@ def get_competition_status(comp_id: int):
             comp_length = int((comp_results.comp_length).total_seconds()) #get comp length in total seconds
             comp_length = comp_length//60 #get comp length converted to minutes (rounded down)
             comp_message = f"Competition is {comp_status}.\\n" \
-                                f"User {winner_username} won with a score of {playlist_score} on their playlist!\\n" \
-                                f"Total participants: {num_players}\\n" \
-                                f"Competition length: {comp_length} minutes"
+                           f"User {winner_username} won with a score of {playlist_score} on their playlist!\\n" \
+                           f"Total participants: {num_players}\\n" \
+                           f"Competition length: {comp_length} minutes"
             overall_comp_status['winner_playlist_id'] = winner_playlist
             overall_comp_status['winner_username'] = winner_username        
         
