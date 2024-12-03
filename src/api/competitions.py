@@ -93,15 +93,10 @@ def vote_on_playlist(competition_id: int, request_body: VotesRequest):
     Vote on a specific playlist in a competition
     Votes are integers: 1-5
     """
+    vote_info = dict(request_body)
 
-    if vote not in [1, 2, 3, 4, 5]:
+    if vote_info["vote"] not in [1, 2, 3, 4, 5]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not a valid vote')
-
-    vote_info = {
-        "voter_id": request_body.voter_user_id,
-        "playlist_id": request_body.playlist_id,
-        "vote_score": request_body.vote
-    }
 
     voter_exists_sql = sqlalchemy.text("""
         SELECT 1
@@ -210,19 +205,19 @@ def vote_on_playlist(competition_id: int, request_body: VotesRequest):
     try:
         with db.engine.begin() as connection:
             # check if user exists and is active
-            active_user_result = connection.execute(voter_exists_sql, {"user_id": voter_user_id}).fetchone()
+            active_user_result = connection.execute(voter_exists_sql, {"user_id": vote_info["voter_user_id"]}).fetchone()
             if not active_user_result:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Active user not found')
             
             # check if playlist exists
-            result = connection.execute(playlist_exists_sql, {"playlist_id": playlist_id}).fetchone()
+            result = connection.execute(playlist_exists_sql, {"playlist_id": vote_info["playlist_id"]}).fetchone()
             if not result:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Playlist not found')
 
             # check if the user has already voted on this playlist
             vote_result = connection.execute(vote_exists_sql, {
-                "voter_id": voter_user_id,
-                "playlist_id": playlist_id
+                "voter_id": vote_info["voter_user_id"],
+                "playlist_id": vote_info["playlist_id"]
             }).fetchone()
             if vote_result:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User has already voted on this playlist')
@@ -230,7 +225,7 @@ def vote_on_playlist(competition_id: int, request_body: VotesRequest):
             # check if all other users have submitted their playlists
             not_submitted_count = connection.execute(all_others_submitted_sql, {
                 "competition_id": competition_id,
-                "voter_id": voter_user_id
+                "voter_id": vote_info["voter_user_id"]
             }).scalar()
             if not_submitted_count > 0:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not all other users have submitted their playlists')
@@ -240,12 +235,12 @@ def vote_on_playlist(competition_id: int, request_body: VotesRequest):
 
             # increment total votes for the playlist
             connection.execute(increment_total_votes_sql, {
-                "playlist_id": playlist_id
+                "playlist_id": vote_info["playlist_id"]
             })
 
             # update average score for the playlist if total votes match participant count
             connection.execute(update_average_score_sql, {
-                "playlist_id": playlist_id,
+                "playlist_id": vote_info["playlist_id"],
                 "competition_id": competition_id
             })
 
