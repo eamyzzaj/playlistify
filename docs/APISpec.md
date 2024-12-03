@@ -49,7 +49,7 @@ Allows a user to add a song to their playlist during an active competition. The 
 ```json
 {
   "user_id": "integer",
-  "song_id": "string",
+  "song_id": "integer",
   "song_title": "string",
   "artist": "string"
 }
