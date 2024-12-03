@@ -61,7 +61,7 @@ Allows a user to add a song to their playlist during an active competition. The 
   "message": "string", /* Success or failure message */
   "playlist_status": "boolean", /* true if the song was successfully added, false otherwise */
   "song_details": {
-    "song_id": "string",
+    "song_id": "integer",
     "song_title": "string",
     "artist": "string"
   }
@@ -208,13 +208,13 @@ Get all playlistify users.
 ```json
 [
   {
-    "user_id": "string",  /* for admin */
+    "user_id": "integer",  /* for admin */
     "username": "string",  /* for users */
     "email": "string",
     "name": "string",
     "competitions": [
       {
-        "competition_id": "string",
+        "competition_id": "integer",
         "status": "boolean"  /* TRUE for active, FALSE for inactive */
       },
       ...
