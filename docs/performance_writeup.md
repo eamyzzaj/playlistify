@@ -1,7 +1,7 @@
 # Performance Write-Up #
 
 ## Fake Data Modeling 
-Through a series of [Python scripts](add_link) for each table and the use of Docker, the distribution of the ~1 million rows of fake data was distributed as below:
+Through a series of [Python scripts](../docker_testing/) for each table and the use of Docker, the distribution of the ~1 million rows of fake data was distributed as below:
 * Users: 500,000 rows
 * ActiveUsers: 50,000 rows 
 * Competitions: 20,000 rows
