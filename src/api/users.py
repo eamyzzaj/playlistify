@@ -22,6 +22,11 @@ class UserCreateRequest(BaseModel):
 
 @router.post("/")
 def create_user(user: UserCreateRequest):
+    if len(user.username) > 50:
+        raise HTTPException(status_code=400, detail="Username must be less than 50 characters.")
+    
+    if len(user.name) > 100:
+        raise HTTPException(status_code=400, detail="Name must be less than 100 characters.")
 
     new_user = {
                 "username": user.username,
@@ -39,7 +44,7 @@ def create_user(user: UserCreateRequest):
         return {"message": 'Account created successfully', "user_id": newuser_id}
     except Exception as e:
         print(f"Account creation failed: {e}")
-        return {"message": 'Account creation failed', "user_id": None}   
+        raise HTTPException(status_code=500, detail="Account creation failed due to a server error.")
     
 
 # user login - ivana
