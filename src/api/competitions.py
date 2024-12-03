@@ -1,5 +1,5 @@
 #competitions.py
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from src.api import auth
 
@@ -23,6 +23,8 @@ def get_competitions():
     comp_list = []
     with db.engine.begin() as connection:
         comps = connection.execute(sqlalchemy.text("SELECT competition_id, status, participants_count FROM competitions ")).fetchall()
+        if not comps:
+            return {"message": "No competitions found", "competitions": comp_list}
         for competition in comps:
             comp_list.append(
                 {
@@ -31,7 +33,7 @@ def get_competitions():
                 "participants": competition.participants_count
                 }
             )
-    return comp_list
+    return {"competitions": comp_list}
 
 
 @router.post("/join")
@@ -81,12 +83,18 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
 
     if vote not in [1, 2, 3, 4, 5]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not a valid vote')
-    
+
     vote_info = {
         "voter_id": voter_user_id,
         "playlist_id": playlist_id,
         "vote_score": vote
     }
+
+    voter_exists_sql = sqlalchemy.text("""
+        SELECT 1
+        FROM activeusers
+        WHERE user_id = :user_id
+    """)
 
     # check if the playlist exists
     playlist_exists_sql = sqlalchemy.text("""
@@ -188,6 +196,11 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
 
     try:
         with db.engine.begin() as connection:
+            # check if user exists and is active
+            active_user_result = connection.execute(voter_exists_sql, {"user_id": voter_user_id}).fetchone()
+            if not active_user_result:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Active user not found')
+            
             # check if playlist exists
             result = connection.execute(playlist_exists_sql, {"playlist_id": playlist_id}).fetchone()
             if not result:
