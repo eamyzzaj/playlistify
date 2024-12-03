@@ -194,33 +194,6 @@ Upon logging in, user is added to an active users table.
 }
 ```
 
-## 2.5 Get all Users - `/users/` (GET)
-Get all playlistify users.
-
-**Response:**
-```json
-[
-  {
-    "user_id": "integer",  /* for admin */
-    "username": "string",  /* for users */
-    "email": "string",
-    "name": "string",
-    "competitions": [
-      {
-        "competition_id": "integer",
-        "status": "boolean"  /* TRUE for active, FALSE for inactive */
-      },
-      ...
-    ]
-  },
-  ...
-]
-```
-
-**Response (No Users Found):**
-```json
-[]
-```
 
 ## 2.6 Get User Voting Pattern Trends - `/users/{user_id}/voting-pattern-trends` (GET)
 Gets insights into how a user's voting behavior has evolved across different competitions.
