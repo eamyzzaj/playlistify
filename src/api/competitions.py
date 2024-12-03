@@ -82,8 +82,13 @@ def join_competitions(username: str, compid: int ):
         }
     
 
+class VotesRequest(BaseModel):
+    playlist_id: int
+    voter_user_id: int
+    vote: int
+    
 @router.post("/{competition_id}/votes")
-def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, vote: int):
+def vote_on_playlist(competition_id: int, request_body: VotesRequest):
     """
     Vote on a specific playlist in a competition
     Votes are integers: 1-5
@@ -93,9 +98,9 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not a valid vote')
 
     vote_info = {
-        "voter_id": voter_user_id,
-        "playlist_id": playlist_id,
-        "vote_score": vote
+        "voter_id": request_body.voter_user_id,
+        "playlist_id": request_body.playlist_id,
+        "vote_score": request_body.vote
     }
 
     voter_exists_sql = sqlalchemy.text("""
