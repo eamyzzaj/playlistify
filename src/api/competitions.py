@@ -263,7 +263,6 @@ def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, 
     return {"message": "Vote successful"}
 
 
-
 @router.get("/{competition_id}/status")
 def get_competition_status(comp_id: int):
     """

@@ -124,7 +124,7 @@ def get_all_user_playlists(user_id: int):
     playlists = []
 
     with db.engine.begin() as connection:
-        # SQL query to retrieve all playlists the user has submitted across competitions
+        # SQL query to retrieve all playlists the user has ted across competitions
         playlists_query = sqlalchemy.text("""
             SELECT p.playlist_id, p.competition_id, s.song_id, s.song_title
             FROM playlists AS p
