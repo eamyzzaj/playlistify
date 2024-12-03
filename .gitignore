@@ -13,3 +13,4 @@ src/api/__pycache__/
 
 # Ignore other system files
 .DS_Store
+docker-compose.yml
