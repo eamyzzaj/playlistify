@@ -350,41 +350,27 @@ def get_competition_status(comp_id: int):
 
 
 
-class SongRequest(BaseModel):
-    user_id: int
-    song_id: int
-    song_title: str
-    artist: str
+@router.post("/{competition_id}/playlists/{playlist_id}/songs")
+def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
 
-
-@router.post("/{competition_id}/playlists/songs")
-def add_song_to_playlist(competition_id: int, song_request: SongRequest):
-    song_id = song_request.song_id
-    song_title = song_request.song_title
-    artist = song_request.artist
-    user_id = song_request.user_id
-
-    if song_id is None or song_title is None or artist is None or user_id is None:
-        raise HTTPException(status_code = 400, detail = 'incomplete request')
-    
     with db.engine.begin() as connection:
         # check if the competition exists and is active, user enrollment, and user's playlist
         query = text("""
-            SELECT c.status AS competition_status, uc.enrollment_status, p.playlist_id
+            SELECT c.status AS competition_status, uc.enrollment_status, p.user_id as user_id
             FROM competitions c
-            LEFT JOIN usercompetitions uc ON uc.competition_id = c.competition_id AND uc.user_id = :user_id
-            LEFT JOIN playlists p ON p.competition_id = c.competition_id AND p.user_id = :user_id
+            LEFT JOIN usercompetitions uc ON uc.competition_id = c.competition_id
+            LEFT JOIN playlists p ON p.competition_id = c.competition_id
             WHERE c.competition_id = :competition_id
         """)
-        result = connection.execute(query, {"competition_id": competition_id, "user_id": user_id}).fetchone()
-
+        result = connection.execute(query, {"competition_id": competition_id}).fetchone()
+        
         if not result or result.competition_status != 'active':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Competition not active or not found")
         
-        if not result.enrollment_status:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not enrolled in the competition")
+        user_id = result.user_id
 
-        playlist_id = result.playlist_id
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not enrolled in the competition")  
 
         # if the user doesn't have a playlist, create a new one
         if not playlist_id:
@@ -403,14 +389,18 @@ def add_song_to_playlist(competition_id: int, song_request: SongRequest):
             """)
             connection.execute(update_user_comp_sql, {"playlist_id": playlist_id, "user_id": user_id, "competition_id": competition_id})
 
-        # check if the song exists, if not insert it
+        # check if the song exists
         song_exists_sql = text("""
-            INSERT INTO songs (song_id, song_title, artist)
-            VALUES (:song_id, :song_title, :artist)
-            ON CONFLICT (song_id) DO NOTHING
+            SELECT song_title, artist
+            FROM songs
+            WHERE song_id = :song_id
         """)
-        connection.execute(song_exists_sql, {"song_id": song_id, "song_title": song_title, "artist": artist})
-
+        song_result = connection.execute(song_exists_sql, {"song_id": song_id}).fetchone()
+        
+        if not song_result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
+        
+        song_title, artist = song_result.song_title, song_result.artist
 
         # check if the song is already in the user's playlist
         song_in_playlist_sql = text("""

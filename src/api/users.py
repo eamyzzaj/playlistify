@@ -16,16 +16,16 @@ router = APIRouter(
 
 # user signup
 # POST
-class userCreateRequest(BaseModel):
+class UserCreateRequest(BaseModel):
     username: str
     name: str
 
 @router.post("/")
-def create_user(user: userCreateRequest):
+def create_user(user: UserCreateRequest):
 
     new_user = {
-                    "username": user.username,
-                    "name": user.name
+                "username": user.username,
+                "name": user.name
                 }
     
     user_insert_sql = sqlalchemy.text("""
