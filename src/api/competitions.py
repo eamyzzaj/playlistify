@@ -74,9 +74,9 @@ def join_competitions(username: str, compid: int ):
         if is_active == "completed":
             raise HTTPException(status_code = 404, detail = "competition has already concluded")
             
-        join_comp = connection.execute(sqlalchemy.text("""UPDATE competitions SET participants_count = participants_count + 1
+        connection.execute(sqlalchemy.text("""UPDATE competitions SET participants_count = participants_count + 1
                                                         WHERE competition_id = :competitionid """), {"competitionid": compid})
-        add_to_user = connection.execute(sqlalchemy.text("""INSERT INTO usercompetitions(user_id, competition_id, enrollment_status, submission_status) 
+        connection.execute(sqlalchemy.text("""INSERT INTO usercompetitions(user_id, competition_id, enrollment_status, submission_status) 
                                                          VALUES(:uid, :cid, TRUE, FALSE) """),
                                                          {"uid": get_user_id, "cid":compid})
         return {
