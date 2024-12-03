@@ -364,7 +364,7 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
             LEFT JOIN playlists p ON p.competition_id = c.competition_id
             WHERE c.competition_id = :competition_id
         """)
-        result = connection.execute(query, {"competition_id": competition_id}).fetchone()
+        result = connection.execute(status_query, {"competition_id": competition_id}).fetchone()
         
         if not result or result.competition_status != 'active':
             raise HTTPException(status_code= 400, detail="Competition not active or not found")
