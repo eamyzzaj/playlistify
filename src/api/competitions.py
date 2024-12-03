@@ -74,7 +74,7 @@ def join_competitions(username: str, compid: int ):
         }
     
 
-@router.post("/{competition_id}/vote")
+@router.post("/{competition_id}/votes")
 def vote_on_playlist(competition_id: int, playlist_id: int, voter_user_id: int, vote: int):
     """
     Vote on a specific playlist in a competition

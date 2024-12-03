@@ -86,7 +86,7 @@ Allows a user to submit their playlist after adding all the desired songs during
 }
 ```
 
-## 1.5 Vote on Playlist - `/competitions/{competition_id}/vote` (POST)
+## 1.5 Vote on Playlist - `/competitions/{competition_id}/votes` (POST)
 Allows users to vote for the best playlist in a competition. After submissions, playlists enter a voting phase where users can rank others’ playlists.
 
 **Request:**
