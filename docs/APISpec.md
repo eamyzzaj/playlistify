@@ -152,8 +152,7 @@ Create a new account for a user.
 **Request:**
 ```json
 {
-  "username": "string",
-  "password": "string"
+  "username": "string"
 }
 ```
 
