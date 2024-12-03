@@ -74,7 +74,8 @@ Allows a user to submit their playlist after adding all the desired songs during
 **Request:**
 ```json
 {
-  "playlist_id": "string",
+  "user_id": "integer",
+  "playlist_id": "integer",
   "competition_id": "integer"
 }
 ```
@@ -83,7 +84,6 @@ Allows a user to submit their playlist after adding all the desired songs during
 ```json
 {
   "message": "string",  /* Success or failure message */
-  "submission_status": "boolean"  /* true if the playlist submission was successful */
 }
 ```
 
