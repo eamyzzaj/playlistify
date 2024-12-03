@@ -93,7 +93,7 @@ Allows users to vote for the best playlist in a competition. After submissions, 
 **Request:**
 ```json
 {
-  "playlist_id": "string",
+  "playlist_id": "integer",
   "vote_score": "integer"
 }
 ```
@@ -112,7 +112,7 @@ The final results of a competition, revealing the winner and their playlist.
 **Response:**
 ```json
 {
-  "winner_playlist_id": "string",  /* ID of the winning playlist */
+  "winner_playlist_id": "integer",  /* ID of the winning playlist */
   "winner_username": "string",  /* Username of the competition winner */
   "message": "string"  /* Message detailing the competition outcome */
 }
@@ -154,9 +154,9 @@ Get all of a user’s submitted playlists from past competitions.
 ```json
 [
   {
-    "user_id": "number",
+    "user_id": "integer",
     "competition_id": "integer",
-    "playlist_id": "number",
+    "playlist_id": "integer",
     "songs": "List[string]"
   }
 ]
