@@ -177,8 +177,7 @@ Upon logging in, user is added to an active users table.
 **Request:**
 ```json
 {
-  "username": "string",
-  "password": "string"
+  "username": "string"
 }
 ```
 
