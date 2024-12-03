@@ -124,12 +124,6 @@ The final results of a competition, revealing the winner and their playlist.
 ## 2.1 Get User Competitions - `/users/{user_id}/competitions` (GET)
 Get all competitions a user has participated in or is currently participating in.
 
-**Request:**
-```json
-{
-  "user_id": "integer"
-}
-```
 
 **Response:**
 ```json
