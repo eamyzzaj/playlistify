@@ -36,7 +36,7 @@ def get_competitions():
     return {"competitions": comp_list}
 
 
-@router.post("/join")
+@router.post("/participants")
 def join_competitions(username: str, compid: int ):
     #update the competitions table (if competition is active) to update the number of active players
     #add competition to user_competitions
