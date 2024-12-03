@@ -127,7 +127,7 @@ Get all competitions a user has participated in or is currently participating in
 **Request:**
 ```json
 {
-  "user_id": "number"
+  "user_id": "integer"
 }
 ```
 
@@ -146,7 +146,7 @@ Get all of a user’s submitted playlists from past competitions.
 **Request:**
 ```json
 {
-  "user_id": "number"
+  "user_id": "integer"
 }
 ```
 
