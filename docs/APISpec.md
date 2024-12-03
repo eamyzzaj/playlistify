@@ -156,7 +156,6 @@ Create a new account for a user.
 ```json
 {
   "username": "string",
-  "email": "string",
   "password": "string"
 }
 ```
