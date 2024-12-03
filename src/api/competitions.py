@@ -247,6 +247,7 @@ def get_competition_status(comp_id: int):
     Get status of specific competition\n
     Returns winner's playlist id, username, and message about comp outcome
     """
+    
     overall_comp_status = {
         "winner_playlist_id": None,
         "winner_username": None,
@@ -340,6 +341,9 @@ def add_song_to_playlist(competition_id: int, song_request: SongRequest):
     artist = song_request.artist
     user_id = song_request.user_id
 
+    if song_id is None or song_title is None or artist is None or user_id is None:
+        raise HTTPException(status_code = 400, detail = 'incomplete request')
+    
     with db.engine.begin() as connection:
         # check if the competition exists and is active, user enrollment, and user's playlist
         query = text("""
