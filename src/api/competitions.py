@@ -497,3 +497,22 @@ def submit_playlist(competition_id: int, request_body: SubmitPlaylistRequest):
         "message": "Playlist submission successful"
     }
     return response
+
+
+@router.get("/songs")
+def get_songs():
+
+    song_sql = """
+                SELECT song_id, song_title, artist
+                FROM songs
+                """
+    try:
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text(song_sql))
+            song_list = [dict(row._mapping) for row in result.fetchall()]
+        
+        return song_list
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code= 400, detail="Songs not able to be retrieved")
+        
