@@ -125,7 +125,7 @@ def get_submitted_playlists(compid: int):
             return grouped_songs
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(status_code=400, detail='Not able to retrieve playlists')
+        raise HTTPException(status_code=404, detail='Not able to retrieve playlists')
 
 class VotesRequest(BaseModel):
     playlist_id: int
