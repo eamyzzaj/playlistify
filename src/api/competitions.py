@@ -7,6 +7,7 @@ import sqlalchemy
 from sqlalchemy import text
 
 from src import database as db
+from collections import defaultdict
 
 
 router = APIRouter(
@@ -81,6 +82,50 @@ def join_competitions(username: str, compid: int ):
             "message": "OK"
         }
     
+
+@router.get("/submitted_playlists")
+def get_submitted_playlists(compid: int):
+    """
+    View other playlists in competition to vote on
+    """
+    playlists_sql = """
+        SELECT playlistsongs.playlist_id, song_title, artist
+        FROM playlists
+        JOIN playlistsongs ON playlistsongs.playlist_id = playlists.playlist_id
+        JOIN songs ON playlistsongs.song_id = songs.song_id
+        WHERE competition_id = :competition_id
+        ORDER BY playlistsongs.playlist_id
+    """
+
+    participant_count_sql = """
+                        SELECT participants_count
+                        FROM competitions
+                        WHERE competition_id = :competition_id
+                        """
+    try:
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text(playlists_sql), {"competition_id": compid})
+            participant_count = connection.execute(sqlalchemy.text(participant_count_sql), {"competition_id": compid}).scalar()
+    
+        # group songs by playlist_id
+        playlists = defaultdict(list)
+        rows = result.fetchall()
+        for row in rows:
+            playlists[row.playlist_id].append({
+                "song_title": row.song_title,
+                "artist": row.artist
+            })
+
+        # convert to list of lists
+        grouped_songs = [{"playlist_id": playlist_id, "songs": songs} for playlist_id, songs in playlists.items()]
+
+        if len(grouped_songs) < participant_count:
+            return {"message": "Can not view playlists until all participants have submitted!"}
+        else:
+            return grouped_songs
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=400, detail='Not able to retrieve playlists')
 
 class VotesRequest(BaseModel):
     playlist_id: int
