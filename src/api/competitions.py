@@ -514,5 +514,5 @@ def get_songs():
         return song_list
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(status_code= 400, detail="Songs not able to be retrieved")
+        raise HTTPException(status_code= 404, detail="Songs not able to be retrieved")
         
