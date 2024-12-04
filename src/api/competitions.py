@@ -5,6 +5,7 @@ from src.api import auth
 
 import sqlalchemy
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from src import database as db
 from collections import defaultdict
@@ -387,7 +388,47 @@ def get_competition_status(comp_id: int):
         print(f"Error with client retrieving competition status: \n{e}")
         raise HTTPException(status_code=404, detail=f"Error retrieving competition status")
 
+@router.post("/{competition_id}/playlists/create")
+def create_playlist(username: str, competition_id: int):
 
+    username_to_userid = """
+                        SELECT user_id
+                        FROM users
+                        WHERE username = :username
+                        """
+    check_user_in_comp = """
+                        SELECT 1
+                        FROM usercompetitions
+                        WHERE user_id = :user_id
+                            AND competition_id = :competition_id
+                        """
+    create_pl_sql = """
+                    INSERT INTO playlists (user_id, competition_id)
+                    VALUES (:user_id, :competition_id)
+                    RETURNING playlist_id
+                    """
+    update_user_comp_sql = """
+                UPDATE usercompetitions
+                SET playlist_id = :playlist_id
+                WHERE user_id = :user_id AND competition_id = :competition_id
+            """
+
+    with db.engine.begin() as connection:
+        user_id = connection.execute(sqlalchemy.text(username_to_userid), {"username": username}).scalar()
+        if not user_id:
+            raise HTTPException(status_code=404, detail='User not found')
+        
+        user_in_comp = connection.execute(sqlalchemy.text(check_user_in_comp), {"user_id": user_id, "competition_id": competition_id}).fetchone()
+        if not user_in_comp:
+            raise HTTPException(status_code=400, detail='User specified is not in this competition!')
+        
+        try:
+            new_playlist_id = connection.execute(sqlalchemy.text(create_pl_sql), {"user_id": user_id, "competition_id": competition_id}).scalar()
+            connection.execute(sqlalchemy.text(update_user_comp_sql), {"playlist_id": new_playlist_id, "user_id": user_id, "competition_id": competition_id})
+        except IntegrityError as e:
+            return {"message": "Playlist already exists for this user in this competition!"}
+        
+    return {"playlist_id": new_playlist_id}
 
 @router.post("/{competition_id}/playlists/{playlist_id}/songs")
 def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
@@ -410,23 +451,6 @@ def add_song_to_playlist(competition_id: int, playlist_id: int, song_id: int):
 
         if not user_id:
             raise HTTPException(status_code= 403, detail="User not enrolled in the competition")  
-
-        # if the user doesn't have a playlist, create a new one
-        if not playlist_id:
-            create_playlist_sql = text("""
-                INSERT INTO playlists (user_id, competition_id)
-                VALUES (:user_id, :competition_id)
-                RETURNING playlist_id
-            """)
-            playlist_id = connection.execute(create_playlist_sql, {"user_id": user_id, "competition_id": competition_id}).scalar()
-
-            # update the usercompetitions table with the new playlist_id
-            update_user_comp_sql = text("""
-                UPDATE usercompetitions
-                SET playlist_id = :playlist_id
-                WHERE user_id = :user_id AND competition_id = :competition_id
-            """)
-            connection.execute(update_user_comp_sql, {"playlist_id": playlist_id, "user_id": user_id, "competition_id": competition_id})
 
         # check if the song exists
         song_exists_sql = text("""
