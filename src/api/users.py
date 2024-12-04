@@ -44,7 +44,7 @@ def create_user(user: UserCreateRequest):
         return {"message": 'Account created successfully', "user_id": newuser_id}
     except Exception as e:
         print(f"Account creation failed: {e}")
-        raise HTTPException(status_code=403, detail="Account creation failed, try a different username.")
+        raise HTTPException(status_code=400, detail="Account creation failed, try a different username.")
     
 
 # POST
