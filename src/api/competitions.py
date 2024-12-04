@@ -64,14 +64,17 @@ def join_competitions(username: str, compid: int ):
             FROM competitions
             WHERE competition_id = :competitionid"""), {"competitionid": compid}).scalar()
         
-        if is_in_comp is None:
-            raise HTTPException(status_code = 404, detail = "competition not found")
+        if get_user_id is None:
+            raise HTTPException(status_code = 400, detail = 'user does not exist')
         
         if is_in_comp:
             raise HTTPException(status_code = 400, detail = "already enrolled in competition")
         
         if is_active == "completed":
             raise HTTPException(status_code = 404, detail = "competition has already concluded")
+        
+        if is_active is None:
+            raise HTTPException(status_code = 404, detail = 'competition not found')
             
         connection.execute(sqlalchemy.text("""UPDATE competitions SET participants_count = participants_count + 1
                                                         WHERE competition_id = :competitionid """), {"competitionid": compid})
