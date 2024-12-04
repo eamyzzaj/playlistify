@@ -279,7 +279,11 @@ def vote_on_playlist(competition_id: int, request_body: VotesRequest):
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Not all other users have submitted their playlists')
 
             # insert the vote
-            connection.execute(insert_vote_sql, vote_info)
+            connection.execute(insert_vote_sql, {
+                "voter_id": vote_info["voter_user_id"],
+                "playlist_id": vote_info["playlist_id"],
+                "vote_score": vote_info["vote"]
+            })
 
             # increment total votes for the playlist
             connection.execute(increment_total_votes_sql, {
