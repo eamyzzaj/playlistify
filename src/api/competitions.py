@@ -121,7 +121,7 @@ def get_submitted_playlists(compid: int):
 
         # convert to list of lists
         grouped_songs = [{"playlist_id": playlist_id, "songs": songs} for playlist_id, songs in playlists.items()]
-
+        
         if len(grouped_songs) < participant_count:
             return {"message": "Can not view playlists until all participants have submitted!"}
         else:
@@ -316,11 +316,7 @@ def get_competition_status(comp_id: int):
     Returns winner's playlist id, username, and message about comp outcome
     """
     
-    overall_comp_status = {
-        "winner_playlist_id": None,
-        "winner_username": None,
-        "message": None
-    }
+    overall_comp_status = {}
 
     comp_exists_sql = sqlalchemy.text("""
                                     SELECT 1
@@ -361,37 +357,31 @@ def get_competition_status(comp_id: int):
             comp_status = connection.execute(comp_status_sql, {"competition_id": comp_id}).fetchone() 
             comp_results = connection.execute(comp_details_sql, {"competition_id": comp_id}).fetchone()
 
-        if comp_status == ('active',):
-            comp_message = "Competition is still in progress - check again later!"
+        if comp_status.status == 'active':
+            overall_comp_status['status'] = comp_status.status
+            overall_comp_status['message'] = "Competition is still in progress - check back later for more stats!"
         else:
-            winner_playlist = comp_results.winner_playlist_id
-            winner_username = comp_results.username
-            playlist_score = comp_results.avg_score
-            num_players = comp_results.participants_count
+            overall_comp_status['status'] = comp_status.status
+            overall_comp_status['winner_playlist_id'] = comp_results.winner_playlist_id
+            overall_comp_status['winner_username'] = comp_results.username
+            overall_comp_status['playlist_score'] = comp_results.avg_score
+            overall_comp_status['num_players'] = comp_results.participants_count
             comp_length = int((comp_results.comp_length).total_seconds()) #get comp length in total seconds
-            comp_length = comp_length//60 #get comp length converted to minutes (rounded down)
-            comp_message = f"Competition is {comp_status}.\\n" \
-                           f"User {winner_username} won with a score of {playlist_score} on their playlist!\\n" \
-                           f"Total participants: {num_players}\\n" \
-                           f"Competition length: {comp_length} minutes"
-            overall_comp_status['winner_playlist_id'] = winner_playlist
-            overall_comp_status['winner_username'] = winner_username        
-        
-        overall_comp_status['message'] = comp_message
-
-        # for console logging
-        if overall_comp_status['message']:
-            print(f"Comp status GET results message:\n")
-            formatted = overall_comp_status['message'].replace('\\n', '\n')
-            print(f"{formatted}")
-
+            overall_comp_status['comp_length_in_minutes'] = comp_length//60 #get comp length converted to minutes (rounded down)
+            comp_message = f"Competition is {comp_status.status}.\n" \
+                           f"User {comp_results.username} won with a score of {comp_results.avg_score} on their playlist!\n" \
+                           f"Total participants: {comp_results.participants_count}\n" \
+                           f"Competition length: {comp_length//60} minutes"
+            
+            print(f"{comp_message}")
+  
         return overall_comp_status
 
     except HTTPException as e:
         raise e
     except Exception as e:
         print(f"Error with client retrieving competition status: \n{e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving competition status")
+        raise HTTPException(status_code=404, detail=f"Error retrieving competition status")
 
 
 
