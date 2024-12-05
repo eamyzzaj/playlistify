@@ -161,7 +161,7 @@ def get_all_user_playlists(user_id: int):
     return {"user_playlists": playlists}
 
 
-@router.get("/users/{user_id}/voting-pattern-trends")
+@router.get("/{user_id}/voting-pattern-trends")
 def get_user_voting_pattern_trends(user_id: int):
     with db.engine.begin() as connection:
         query = sqlalchemy.text("""
