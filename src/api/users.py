@@ -77,7 +77,8 @@ def user_login(username: str):
         
         connection.execute(insert_query, {"user_id": result[1]})
         
-        return {"message": "User successfully logged in and marked as active."}
+        return {"message": "User successfully logged in and marked as active.",
+                "user_id": result[1]}
 
 
 # user logout

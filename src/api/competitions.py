@@ -571,6 +571,7 @@ def get_songs():
     song_sql = """
                 SELECT song_id, song_title, artist
                 FROM songs
+                ORDER BY song_title
                 """
     try:
         with db.engine.begin() as connection:
